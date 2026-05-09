@@ -121,6 +121,36 @@ void McpServer::AddCommonTools() {
     }
 #endif
 
+    // Temperature tool
+    AddTool("home.get_temperature",
+        "Get the current temperature at home. Returns the temperature value in Celsius along with unit and timestamp information.",
+        PropertyList(),
+        [](const PropertyList& properties) -> ReturnValue {
+            auto http = Board::GetInstance().GetNetwork()->CreateHttp(3);
+            std::string url = "http://192.168.5.71/temperature";
+            
+            if (!http->Open("GET", url)) {
+                throw std::runtime_error("Failed to open URL: " + url);
+            }
+            
+            int status_code = http->GetStatusCode();
+            if (status_code != 200) {
+                http->Close();
+                throw std::runtime_error("Unexpected status code: " + std::to_string(status_code));
+            }
+            
+            std::string response = http->ReadAll();
+            http->Close();
+            
+            // Parse the JSON response and return it
+            cJSON* json = cJSON_Parse(response.c_str());
+            if (json == nullptr) {
+                throw std::runtime_error("Failed to parse temperature response");
+            }
+            
+            return json;
+        });
+
     // Restore the original tools list to the end of the tools list
     tools_.insert(tools_.end(), original_tools.begin(), original_tools.end());
 }
