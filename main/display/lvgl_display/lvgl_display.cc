@@ -119,9 +119,18 @@ void LvglDisplay::UpdateStatusBar(bool update_all) {
     if (app.GetDeviceState() == kDeviceStateIdle) {
         auto& temp_service = app.GetTemperatureService();
         if (temp_service.IsValid()) {
-            char temp_str[32];
-            snprintf(temp_str, sizeof(temp_str), "%.1f°C", temp_service.GetTemperature());
-            SetEmotion(temp_str);
+            static float last_temp = -999.0f;
+            float current_temp = temp_service.GetTemperature();
+            if (current_temp != last_temp) {
+                char temp_str[32];
+                snprintf(temp_str, sizeof(temp_str), "%.1f°C", current_temp);
+                ESP_LOGI(TAG, "Updating temperature display: %s", temp_str);
+                // Use SetChatMessage to display temperature text
+                SetChatMessage("system", temp_str);
+                last_temp = current_temp;
+            }
+        } else {
+            ESP_LOGD(TAG, "Temperature service not valid yet");
         }
     }
 
