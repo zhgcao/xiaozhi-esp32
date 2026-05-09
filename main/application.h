@@ -16,6 +16,7 @@
 #include "audio_service.h"
 #include "device_state.h"
 #include "device_state_machine.h"
+#include "temperature_service.h"
 
 // Main event bits
 #define MAIN_EVENT_SCHEDULE             (1 << 0)
@@ -112,6 +113,7 @@ public:
     AecMode GetAecMode() const { return aec_mode_; }
     void PlaySound(const std::string_view& sound);
     AudioService& GetAudioService() { return audio_service_; }
+    TemperatureService& GetTemperatureService() { return temperature_service_; }
     
     /**
      * Reset protocol resources (thread-safe)
@@ -134,6 +136,7 @@ private:
     AecMode aec_mode_ = kAecOff;
     std::string last_error_message_;
     AudioService audio_service_;
+    TemperatureService temperature_service_;
     std::unique_ptr<Ota> ota_;
 
     bool has_server_time_ = false;

@@ -115,6 +115,16 @@ void LvglDisplay::UpdateStatusBar(bool update_all) {
     auto& board = Board::GetInstance();
     auto codec = board.GetAudioCodec();
 
+    // Update temperature display in idle state
+    if (app.GetDeviceState() == kDeviceStateIdle) {
+        auto& temp_service = app.GetTemperatureService();
+        if (temp_service.IsValid()) {
+            char temp_str[32];
+            snprintf(temp_str, sizeof(temp_str), "%.1f°C", temp_service.GetTemperature());
+            SetEmotion(temp_str);
+        }
+    }
+
     // Update mute icon
     {
         DisplayLockGuard lock(this);
@@ -222,12 +232,16 @@ void LvglDisplay::SetPreviewImage(std::unique_ptr<LvglImage> image) {
 }
 
 void LvglDisplay::SetPowerSaveMode(bool on) {
+    auto& app = Application::GetInstance();
     if (on) {
         SetChatMessage("system", "");
         SetEmotion("sleepy");
     } else {
         SetChatMessage("system", "");
-        SetEmotion("neutral");
+        // Don't set emotion in idle state, let UpdateStatusBar handle temperature display
+        if (app.GetDeviceState() != kDeviceStateIdle) {
+            SetEmotion("neutral");
+        }
     }
 }
 

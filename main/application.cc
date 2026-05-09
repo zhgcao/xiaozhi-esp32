@@ -281,6 +281,9 @@ void Application::HandleNetworkConnectedEvent() {
     // Update the status bar immediately to show the network state
     auto display = Board::GetInstance().GetDisplay();
     display->UpdateStatusBar(true);
+    
+    // Start temperature service
+    temperature_service_.Start();
 }
 
 void Application::HandleNetworkDisconnectedEvent() {
@@ -654,7 +657,7 @@ void Application::DismissAlert() {
     if (GetDeviceState() == kDeviceStateIdle) {
         auto display = Board::GetInstance().GetDisplay();
         display->SetStatus(Lang::Strings::STANDBY);
-        display->SetEmotion("neutral");
+        // Don't set emotion here, let UpdateStatusBar handle temperature display
         display->SetChatMessage("system", "");
     }
 }
@@ -863,7 +866,7 @@ void Application::HandleStateChangedEvent() {
         case kDeviceStateIdle:
             display->SetStatus(Lang::Strings::STANDBY);
             display->ClearChatMessages();  // Clear messages first
-            display->SetEmotion("neutral"); // Then set emotion (wechat mode checks child count)
+            // Don't set emotion here, let UpdateStatusBar handle temperature display
             audio_service_.EnableVoiceProcessing(false);
             audio_service_.EnableWakeWordDetection(true);
             break;
